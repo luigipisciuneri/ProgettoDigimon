@@ -1,0 +1,51 @@
+CREATE TABLE DIGIMON(
+owner VARCHAR(45) NOT NULL,
+nome VARCHAR(45) NOT NULL, 
+hp   INT,
+atk  INT,
+def  INT,
+res  INT,
+evo  VARCHAR(45) NOT NULL DEFAULT 'BASE',
+tipo VARCHAR(45),
+PRIMARY KEY (`owner`,`nome`)
+);
+
+------------------------------------------------
+
+CREATE TABLE PARTITA (
+id_partita INT NOT NULL AUTO_INCREMENT,
+creatore_partita VARCHAR(45),
+password VARCHAR(8),
+digimon1_c VARCHAR(45),
+digimon2_c VARCHAR(45),
+digimon3_c VARCHAR(45),
+partecipante VARCHAR(45),
+digimon1_p VARCHAR(45),
+digimon2_p VARCHAR(45),
+digimon3_p VARCHAR(45),
+PRIMARY KEY (`id_partita`),
+FOREIGN KEY (`creatore_partita`) REFERENCES DIGIMON (`owner`),
+//FOREIGN KEY (`partecipante`) REFERENCES DIGIMON (`owner`)
+);
+
+-----------------------------------
+
+create table svolgimento_partita(
+id_partita int ,
+id_mossa   int ,
+giocatore varchar(45),
+attacco   boolean,
+difesa    boolean,
+vincitore varchar(45),
+FOREIGN KEY (`id_partita`) REFERENCES partita (`id_partita`)
+);
+
+-------------------------------------
+
+
+INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo1','Bommon',532,123,25,10,'livello_primario','terra');
+INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo1','Commandramon',581,126,18,5,'intermedio_campione','fuoco');
+INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo1','Missimon',559,113,11,5,'primo_stato','acqua');
+INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo2','Botamon',553,120,18,8,'livello_primario','terra');
+INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo2','Commandramon',501,127,12,5,'intermedio_campione','fuoco');
+INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo2','Koromon',569,136,15,5,'primo_stato','acqua');
