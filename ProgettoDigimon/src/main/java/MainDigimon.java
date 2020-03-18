@@ -286,6 +286,7 @@ public class MainDigimon {
 
 					// inizio calcolo dei valori
 					System.out.println("Creatore " + ownerC + " - " + nomeC + " - " + hpC + " - " + atkC);
+				// inserire confrontaTipoNuovoHp
 				}
 			} else {
 				ResultSet datiPartitaPartecipante = st2.executeQuery(
@@ -304,6 +305,7 @@ public class MainDigimon {
 					String tipoP = datiPartitaPartecipante.getString("tipo");
 
 					// inizio calcolo dei valori
+					// inserire confrontaTipoNuovoHp
 					System.out.println("Partecipante " + ownerP + " - " + nomeP + " - " + hpP + " - " + atkP);
 				}
 

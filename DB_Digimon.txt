@@ -33,9 +33,12 @@ FOREIGN KEY (`creatore_partita`) REFERENCES DIGIMON (`owner`),
 create table svolgimento_partita(
 id_partita int ,
 id_mossa   int ,
-giocatore varchar(45),
-attacco   boolean,
-difesa    boolean,
+giocatore_C varchar(45),
+attacco_C   varchar(1),
+difesa_C    varchar(1),
+giocatore_P varchar(45),
+attacco_P   varchar(1),
+difesa_P    varchar(1),
 vincitore varchar(45),
 FOREIGN KEY (`id_partita`) REFERENCES partita (`id_partita`)
 );
