@@ -103,18 +103,10 @@ public class MainDigimon {
 			Partita partita = creazionePartita(scanner, connessione);
 			creaSvolgimentoPartita(partita, connessione);
 		}
+		// calcoloRisultatoC va ad aggiornare la tabella svolgimento_partita
+		// inserendo i nuovi hp riferiti ad ogni mossa
 		calcoloRisultatoC(scanner, connessione);
-		System.out.println("Fatto riga 107");
-		// inizio partita
-		// faccio una select nella tabella partita e scelgo l'ultimo record.
-		// inserisco nella tabella svolgimento_partita i dati del creatore perchè gioca
-		// per primo e attacca
-		// inserisco nella tabella svolgimento_partita i dati del partecipante e
-		// difende.
-		// faccio l'iserimento per tre round. quindi un ciclo
-		// una volta che ho i dati calcolo il punteggio in base alle regole delle
-		// specifiche e vedo chi ha vinto
-
+        // bisogna ancora definire regole di chi ha vinto
 	}
 
 	private static void creaSvolgimentoPartita(Partita partita, Connection connessione) throws SQLException {
@@ -268,50 +260,41 @@ public class MainDigimon {
 			System.out.println("conta mosse " + conta);
 		}
 		for (int i = 1; i < conta + 1; i++) {
-			if (i % 2 == 1) {
-				ResultSet datiPartitaCreatore = st1.executeQuery(
-						"select d.* from digimon d, partita p where d.owner=p.creatore_partita and p.id_partita='"
-								+ idpartita
-								+ "' and d.nome in (select giocatore_C from svolgimento_partita where p.id_partita='"
-								+ idpartita + "' and id_mossa='" + i + "');");
-				while (datiPartitaCreatore.next()) {
-					String ownerC = datiPartitaCreatore.getString("owner");
-					String nomeC = datiPartitaCreatore.getString("nome");
-					int hpC = datiPartitaCreatore.getInt("hp");
-					int atkC = datiPartitaCreatore.getInt("atk");
-					int defC = datiPartitaCreatore.getInt("def");
-					int resC = datiPartitaCreatore.getInt("res");
-					String evoC = datiPartitaCreatore.getString("evo");
-					String tipoC = datiPartitaCreatore.getString("tipo");
 
-					// inizio calcolo dei valori
-					System.out.println("Creatore " + ownerC + " - " + nomeC + " - " + hpC + " - " + atkC);
+			ResultSet datiPartitaCreatore = st1.executeQuery(
+					"select a.*,b.* from (select owner as ownerC, nome as nomeC, hp as hpC, atk as atkC, def as defC, res as resC,evo as evoC, tipo as tipoC from digimon d, partita p  where d.owner=p.creatore_partita  and p.id_partita='"
+							+ idpartita
+							+ "' and d.nome in (select giocatore_C  from svolgimento_partita  where p.id_partita= '"
+							+ idpartita + "' and id_mossa='" + i
+							+ "')) a, (select owner as ownerP, nome as nomeP, hp as hpP, atk as atkP, def as defP, res as resP,evo as evoP, tipo as tipoP from digimon d, partita p where d.owner=p.partecipante and p.id_partita='"
+							+ idpartita
+							+ "' and d.nome in (select giocatore_P  from svolgimento_partita where p.id_partita='"
+							+ idpartita + "'  and id_mossa='" + i + "'))b;");
+			while (datiPartitaCreatore.next()) {
+				String ownerC = datiPartitaCreatore.getString("ownerC");
+				String nomeC = datiPartitaCreatore.getString("nomeC");
+				int hpC = datiPartitaCreatore.getInt("hpC");
+				int atkC = datiPartitaCreatore.getInt("atkC");
+				int defC = datiPartitaCreatore.getInt("defC");
+				int resC = datiPartitaCreatore.getInt("resC");
+				String evoC = datiPartitaCreatore.getString("evoC");
+				String tipoC = datiPartitaCreatore.getString("tipoC");
+				String ownerP = datiPartitaCreatore.getString("ownerP");
+				String nomeP = datiPartitaCreatore.getString("nomeP");
+				int hpP = datiPartitaCreatore.getInt("hpP");
+				int atkP = datiPartitaCreatore.getInt("atkP");
+				int defP = datiPartitaCreatore.getInt("defP");
+				int resP = datiPartitaCreatore.getInt("resP");
+				String evoP = datiPartitaCreatore.getString("evoP");
+				String tipoP = datiPartitaCreatore.getString("tipoP");
+
+				// inizio calcolo dei valori
+				confrontaTipoNuovoHp(idpartita, tipoC, tipoP, connessione, scanner, hpC, hpP, atkC, atkP, defC, defP, resC, resP);
+				System.out.println("Creatore " + ownerC + " - " + nomeC + " - " + hpC + " - " + atkC+" Partecipante "+ ownerP + " - " + nomeP + " - " + hpP + " - " + atkP);
 				// inserire confrontaTipoNuovoHp
-				}
-			} else {
-				ResultSet datiPartitaPartecipante = st2.executeQuery(
-						"select d.* from digimon d, partita p where d.owner=p.partecipante and p.id_partita='"
-								+ idpartita
-								+ "' and d.nome in (select giocatore_P from svolgimento_partita where p.id_partita='"
-								+ idpartita + "' and id_mossa='" + i + "');");
-				while (datiPartitaPartecipante.next()) {
-					String ownerP = datiPartitaPartecipante.getString("owner");
-					String nomeP = datiPartitaPartecipante.getString("nome");
-					int hpP = datiPartitaPartecipante.getInt("hp");
-					int atkP = datiPartitaPartecipante.getInt("atk");
-					int defP = datiPartitaPartecipante.getInt("def");
-					int resP = datiPartitaPartecipante.getInt("res");
-					String evoP = datiPartitaPartecipante.getString("evo");
-					String tipoP = datiPartitaPartecipante.getString("tipo");
-
-					// inizio calcolo dei valori
-					// inserire confrontaTipoNuovoHp
-					System.out.println("Partecipante " + ownerP + " - " + nomeP + " - " + hpP + " - " + atkP);
-				}
-
 			}
-		}
 
+		}
 	}
 
 	// creare i seguenti metodi
@@ -322,8 +305,8 @@ public class MainDigimon {
 	// evoluzione digimon
 
 	public static void confrontaTipoNuovoHp(int idpartita, String tipoCreatore, String tipoPartecipante,
-			Connection connessione, Scanner scanner, int hpC, int hpP, int atkC, int atkP,
-			int defC, int defP, int resC, int resP) throws SQLException {
+			Connection connessione, Scanner scanner, int hpC, int hpP, int atkC, int atkP, int defC, int defP, int resC,
+			int resP) throws SQLException {
 		Statement st3 = connessione.createStatement();
 		double hpappoggio;
 		System.out.println("id partita " + idpartita);
@@ -348,7 +331,8 @@ public class MainDigimon {
 					hpP = (int) (hpP - Math.round(hpappoggio));
 				}
 				aggiornaHp(idpartita, idmossa, hpP, connessione);// fare update su tabella svolgiPartita
-			} else if (attaccoC.contentEquals("T") && tipoCreatore.contentEquals("fuoco") && attaccoP.contentEquals("F")) {
+			} else if (attaccoC.contentEquals("T") && tipoCreatore.contentEquals("fuoco")
+					&& attaccoP.contentEquals("F")) {
 				if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
 					hpappoggio = (atkC - defP);
 					hpappoggio = hpappoggio - (hpappoggio * resP) / 100;
@@ -361,92 +345,96 @@ public class MainDigimon {
 					hpP = (int) (hpP - Math.round(hpappoggio));
 				}
 				aggiornaHp(idpartita, idmossa, hpP, connessione);
-			}else if (attaccoC.contentEquals("T") && tipoCreatore.contentEquals("aria")&& attaccoP.contentEquals("F")) {
-					if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
-						hpappoggio = (atkC - defP);
-						hpappoggio = hpappoggio - (hpappoggio * resP) / 100;
-						hpP = (int) (hpP - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("acqua")) {
-						hpappoggio = (atkC * (resP / 100) - defP);
-						hpP = (int) (hpP - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("terra")) {
-						hpappoggio = (atkC * 2 - defP);
-						hpP = (int) (hpP - Math.round(hpappoggio));
-					}
-					aggiornaHp(idpartita, idmossa, hpP, connessione);
-			} else if (attaccoC.contentEquals("T") && tipoCreatore.contentEquals("acqua") && attaccoP.contentEquals("F")) {
-					if (tipoPartecipante.contentEquals("acqua") || tipoPartecipante.contentEquals("terra")) {
-						hpappoggio = (atkC - defP);
-						hpappoggio = hpappoggio - (hpappoggio * resP) / 100;
-						hpP = (int) (hpP - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("fuoco")) {
-						hpappoggio = (atkC * (resP / 100) - defP);
-						hpP = (int) (hpP - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("aria")) {
-						hpappoggio = (atkC * 2 - defP);
-						hpP = (int) (hpP - Math.round(hpappoggio));
-					}
-					aggiornaHp(idpartita, idmossa, hpP, connessione);
-			} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("acqua") && attaccoP.contentEquals("T")) {
-					if (tipoPartecipante.contentEquals("acqua") || tipoPartecipante.contentEquals("terra")) {
-						hpappoggio = (atkP - defC);
-						hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("fuoco")) {
-						hpappoggio = (atkP * (resC / 100) - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("aria")) {
-						hpappoggio = (atkP * 2 - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					}
-					aggiornaHp(idpartita, idmossa, hpC, connessione);
-				} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("fuoco") && attaccoP.contentEquals("T")) {
-					if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
-						hpappoggio = (atkP - defC);
-						hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("terra")) {
-						hpappoggio = (atkP * (resC / 100) - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("acqua")) {
-						hpappoggio = (atkP * 2 - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					}
-					aggiornaHp(idpartita, idmossa, hpC, connessione);
-				} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("aria") && attaccoP.contentEquals("T")) {
-					if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
-						hpappoggio = (atkP - defC);
-						hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("acqua")) {
-						hpappoggio = (atkP * (resC / 100) - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("terrra")) {
-						hpappoggio = (atkP * 2 - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					}
-					aggiornaHp(idpartita, idmossa, hpC, connessione);
-				} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("terra") && attaccoP.contentEquals("T")) {
-					if (tipoPartecipante.contentEquals("acqua") || tipoPartecipante.contentEquals("terra")) {
-						hpappoggio = (atkP - defC);
-						hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("aria")) {
-						hpappoggio = (atkP * (resC / 100) - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					} else if (tipoPartecipante.contentEquals("fuoco")) {
-						hpappoggio = (atkP * 2 - defC);
-						hpC = (int) (hpC - Math.round(hpappoggio));
-					}
-					aggiornaHp(idpartita, idmossa, hpC, connessione);
+			} else if (attaccoC.contentEquals("T") && tipoCreatore.contentEquals("aria")
+					&& attaccoP.contentEquals("F")) {
+				if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
+					hpappoggio = (atkC - defP);
+					hpappoggio = hpappoggio - (hpappoggio * resP) / 100;
+					hpP = (int) (hpP - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("acqua")) {
+					hpappoggio = (atkC * (resP / 100) - defP);
+					hpP = (int) (hpP - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("terra")) {
+					hpappoggio = (atkC * 2 - defP);
+					hpP = (int) (hpP - Math.round(hpappoggio));
 				}
-
+				aggiornaHp(idpartita, idmossa, hpP, connessione);
+			} else if (attaccoC.contentEquals("T") && tipoCreatore.contentEquals("acqua")
+					&& attaccoP.contentEquals("F")) {
+				if (tipoPartecipante.contentEquals("acqua") || tipoPartecipante.contentEquals("terra")) {
+					hpappoggio = (atkC - defP);
+					hpappoggio = hpappoggio - (hpappoggio * resP) / 100;
+					hpP = (int) (hpP - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("fuoco")) {
+					hpappoggio = (atkC * (resP / 100) - defP);
+					hpP = (int) (hpP - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("aria")) {
+					hpappoggio = (atkC * 2 - defP);
+					hpP = (int) (hpP - Math.round(hpappoggio));
+				}
+				aggiornaHp(idpartita, idmossa, hpP, connessione);
+			} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("acqua")
+					&& attaccoP.contentEquals("T")) {
+				if (tipoPartecipante.contentEquals("acqua") || tipoPartecipante.contentEquals("terra")) {
+					hpappoggio = (atkP - defC);
+					hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("fuoco")) {
+					hpappoggio = (atkP * (resC / 100) - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("aria")) {
+					hpappoggio = (atkP * 2 - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				}
+				aggiornaHp(idpartita, idmossa, hpC, connessione);
+			} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("fuoco")
+					&& attaccoP.contentEquals("T")) {
+				if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
+					hpappoggio = (atkP - defC);
+					hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("terra")) {
+					hpappoggio = (atkP * (resC / 100) - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("acqua")) {
+					hpappoggio = (atkP * 2 - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				}
+				aggiornaHp(idpartita, idmossa, hpC, connessione);
+			} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("aria")
+					&& attaccoP.contentEquals("T")) {
+				if (tipoPartecipante.contentEquals("aria") || tipoPartecipante.contentEquals("fuoco")) {
+					hpappoggio = (atkP - defC);
+					hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("acqua")) {
+					hpappoggio = (atkP * (resC / 100) - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("terrra")) {
+					hpappoggio = (atkP * 2 - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				}
+				aggiornaHp(idpartita, idmossa, hpC, connessione);
+			} else if (attaccoC.contentEquals("F") && tipoPartecipante.contentEquals("terra")
+					&& attaccoP.contentEquals("T")) {
+				if (tipoPartecipante.contentEquals("acqua") || tipoPartecipante.contentEquals("terra")) {
+					hpappoggio = (atkP - defC);
+					hpappoggio = hpappoggio - (hpappoggio * resC) / 100;
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("aria")) {
+					hpappoggio = (atkP * (resC / 100) - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				} else if (tipoPartecipante.contentEquals("fuoco")) {
+					hpappoggio = (atkP * 2 - defC);
+					hpC = (int) (hpC - Math.round(hpappoggio));
+				}
+				aggiornaHp(idpartita, idmossa, hpC, connessione);
 			}
 
 		}
 
-	
-	
+	}
+
 	public static void aggiornaHp(int idpartita, int idmossa, int hp, Connection connessione) throws SQLException {
 		String queryAggiornamentoTabSvolPartita = "update svolgimento_partita set punteggio_hp_dif= ? where id_partita=? and id_mossa=?";
 		PreparedStatement prepareStatement1 = connessione.prepareStatement(queryAggiornamentoTabSvolPartita);
@@ -535,62 +523,44 @@ public class MainDigimon {
 }
 
 /*
- 
-  CREATE TABLE DIGIMON(
-owner VARCHAR(45) NOT NULL,
-nome VARCHAR(45) NOT NULL, 
-hp   INT,
-atk  INT,
-def  INT,
-res  INT,
-evo  VARCHAR(45) NOT NULL DEFAULT 'BASE',
-tipo VARCHAR(45),
-PRIMARY KEY (`owner`,`nome`)
-);
-
-------------------------------------------------
-
-CREATE TABLE PARTITA (
-id_partita INT NOT NULL AUTO_INCREMENT,
-creatore_partita VARCHAR(45),
-password VARCHAR(8),
-digimon1_c VARCHAR(45),
-digimon2_c VARCHAR(45),
-digimon3_c VARCHAR(45),
-partecipante VARCHAR(45),
-digimon1_p VARCHAR(45),
-digimon2_p VARCHAR(45),
-digimon3_p VARCHAR(45),
-PRIMARY KEY (`id_partita`),
-FOREIGN KEY (`creatore_partita`) REFERENCES DIGIMON (`owner`),
-//FOREIGN KEY (`partecipante`) REFERENCES DIGIMON (`owner`)
-);
-
------------------------------------
-
-create table svolgimento_partita(
-id_partita int ,
-id_mossa   int ,
-giocatore_C varchar(45),
-attacco_C   varchar(1),
-difesa_C    varchar(1),
-giocatore_P varchar(45),
-attacco_P   varchar(1),
-difesa_P    varchar(1),
-vincitore varchar(45),
-punteggio_hp_dif int,
-FOREIGN KEY (`id_partita`) REFERENCES partita (`id_partita`)
-);
-
--------------------------------------
-
-
-INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo1','Bommon',532,123,25,10,'livello_primario','terra');
-INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo1','Commandramon',581,126,18,5,'intermedio_campione','fuoco');
-INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo1','Missimon',559,113,11,5,'primo_stato','acqua');
-INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo2','Botamon',553,120,18,8,'livello_primario','terra');
-INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo2','Commandramon',501,127,12,5,'intermedio_campione','fuoco');
-INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES ('gruppo2','Koromon',569,136,15,5,'primo_stato','acqua');
-
-  
+ * 
+ * CREATE TABLE DIGIMON( owner VARCHAR(45) NOT NULL, nome VARCHAR(45) NOT NULL,
+ * hp INT, atk INT, def INT, res INT, evo VARCHAR(45) NOT NULL DEFAULT 'BASE',
+ * tipo VARCHAR(45), PRIMARY KEY (`owner`,`nome`) );
+ * 
+ * ------------------------------------------------
+ * 
+ * CREATE TABLE PARTITA ( id_partita INT NOT NULL AUTO_INCREMENT,
+ * creatore_partita VARCHAR(45), password VARCHAR(8), digimon1_c VARCHAR(45),
+ * digimon2_c VARCHAR(45), digimon3_c VARCHAR(45), partecipante VARCHAR(45),
+ * digimon1_p VARCHAR(45), digimon2_p VARCHAR(45), digimon3_p VARCHAR(45),
+ * PRIMARY KEY (`id_partita`), FOREIGN KEY (`creatore_partita`) REFERENCES
+ * DIGIMON (`owner`), //FOREIGN KEY (`partecipante`) REFERENCES DIGIMON
+ * (`owner`) );
+ * 
+ * -----------------------------------
+ * 
+ * create table svolgimento_partita( id_partita int , id_mossa int , giocatore_C
+ * varchar(45), attacco_C varchar(1), difesa_C varchar(1), giocatore_P
+ * varchar(45), attacco_P varchar(1), difesa_P varchar(1), vincitore
+ * varchar(45), punteggio_hp_dif int, FOREIGN KEY (`id_partita`) REFERENCES
+ * partita (`id_partita`) );
+ * 
+ * -------------------------------------
+ * 
+ * 
+ * INSERT INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`)
+ * VALUES ('gruppo1','Bommon',532,123,25,10,'livello_primario','terra'); INSERT
+ * INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES
+ * ('gruppo1','Commandramon',581,126,18,5,'intermedio_campione','fuoco'); INSERT
+ * INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES
+ * ('gruppo1','Missimon',559,113,11,5,'primo_stato','acqua'); INSERT INTO
+ * `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES
+ * ('gruppo2','Botamon',553,120,18,8,'livello_primario','terra'); INSERT INTO
+ * `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES
+ * ('gruppo2','Commandramon',501,127,12,5,'intermedio_campione','fuoco'); INSERT
+ * INTO `DIGIMON` (`owner`,`nome`,`hp`,`atk`,`def`,`res`,`evo`,`tipo`) VALUES
+ * ('gruppo2','Koromon',569,136,15,5,'primo_stato','acqua');
+ * 
+ * 
  */
