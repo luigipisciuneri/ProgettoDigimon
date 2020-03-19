@@ -103,9 +103,9 @@ public class MainDigimon {
 			Partita partita = creazionePartita(scanner, connessione);
 			creaSvolgimentoPartita(partita, connessione);
 		}
-		// calcoloRisultatoC va ad aggiornare la tabella svolgimento_partita
+		// calcoloRisultatoPartita va ad aggiornare la tabella svolgimento_partita
 		// inserendo i nuovi hp riferiti ad ogni mossa
-		calcoloRisultatoC(scanner, connessione);
+		calcoloRisultatoPartita(scanner, connessione);
         // bisogna ancora definire regole di chi ha vinto
 	}
 
@@ -248,7 +248,7 @@ public class MainDigimon {
 
 	// adesso devo calcolare il punteggio e vedere chi ha vinto
 	// questo lo devo fare per ogni mossa.
-	public static void calcoloRisultatoC(Scanner scanner, Connection connessione) throws SQLException {
+	public static void calcoloRisultatoPartita(Scanner scanner, Connection connessione) throws SQLException {
 		int conta = 0;
 		Statement st1 = connessione.createStatement();
 		Statement st2 = connessione.createStatement();
